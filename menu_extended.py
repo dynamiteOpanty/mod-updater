@@ -4,13 +4,15 @@ import color
 import input
 
 class scroll2_content(object):
-    def __init__(self, id : int, name : str, parent, level : int, openable : bool = False, content : list = []) -> None:
+    def __init__(self, id : int, name : str, parent, level : int, openable : bool = False, selectable : bool = True, choosable : bool = True, content : list = []) -> None:
         self.__id = id
         self.__name = name
         self.__parent = parent
         self.__level = level
         self.__content = content
         self.__openable = openable
+        self.__selectable = selectable
+        self.__choosable = choosable
         self.__isOpen = False
     def set_id(self, id):
         self.__id = id
@@ -22,6 +24,12 @@ class scroll2_content(object):
         parent.add_content(self)
     def set_level(self, level):
         self.__level = level
+    def set_openable(self, openable):
+        self.__openable = openable
+    def set_selectable(self, selectable):
+        self.__selectable = selectable
+    def set_choosable(self, choosable):
+        self.__choosable = choosable
     def set_isOpen(self, value):
         self.__isOpen = value
     def clear_content(self):
@@ -42,6 +50,10 @@ class scroll2_content(object):
         return self.__level
     def get_openable(self):
         return self.__openable
+    def get_selectable(self):
+        return self.__selectable
+    def get_choosable(self):
+        return self.__choosable
     def get_isOpen(self):
         return self.__isOpen
 
@@ -140,7 +152,7 @@ def scroll2(screen_lines: int = 15, screen_columns: int = shutil.get_terminal_si
                             if dir2.get_isOpen():
                                 dir2.set_isOpen(False)
                         whole.pop(cursol + 1)
-        elif keyInput == input.ENTER:
+        elif keyInput == input.ENTER and whole[cursol].get_choosable():
             return whole[cursol]
         elif keyInput == 'w':
             screen_offset -= 1
@@ -149,9 +161,9 @@ def scroll2(screen_lines: int = 15, screen_columns: int = shutil.get_terminal_si
 
 if __name__=="__main__":
     root = scroll2_content(-1, "root", None, -1)
-    content = [
-            scroll2_content(0, "test1", root, 0, openable=True),
-            scroll2_content(1, "test2", root, 0, openable=True),
-            scroll2_content(2, "test3", root, 0, openable=True)
-        ]
+    test1 = scroll2_content(0, "test1", root, 0, openable=True)
+    test2 = scroll2_content(0, "hoge", test1, 1)
+    test3 = scroll2_content(1, "test2", root, 0, openable=True)
+    test4 = scroll2_content(2, "test3", root, 0, openable=True)
+    content = [test1, test2, test3, test4]
     scroll2(len(content) + 2, content=content)
