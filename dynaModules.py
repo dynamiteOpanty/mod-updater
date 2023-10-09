@@ -17,8 +17,9 @@ def reqget(URL: str, debug: bool = False, header = None):
                 print(body)
             return body
     except urlliberror.URLError:
-        print("hey")
         raise reqgeterror
+    except KeyboardInterrupt:
+        exit()
 
 # jsonファイルを生成し書き込みます 返り値は書き込んだ内容　よくテストしてないんだけど多分引数は辞書型でも辞書型みたいな面した文字型でもok
 def WriteJsonFile(filepath: str, content: list | dict):
