@@ -19,6 +19,7 @@ class scroll2_content(object):
     def set_parent(self, parent):
         self.__parent = parent
         self.set_level(parent.get_level() + 1)
+        parent.add_content(self)
     def set_level(self, level):
         self.__level = level
     def set_isOpen(self, value):
@@ -63,15 +64,18 @@ def scroll2(screen_lines: int = 15, screen_columns: int = shutil.get_terminal_si
         wholeinscreen: list[scroll2_content] = whole[screen_offset : screen_offset + screen_lines]
         for i, line in enumerate(wholeinscreen):
             x = []
-            for _i in range(line.get_level()):
-                x.append("    ")
-            try:
-                if line.get_id() + 1 == len(line.get_parent().get_all_content()):
-                    x[-1] = "└── "
-                else:
-                    x[-1] = "├── "
-            except IndexError:
-                x[-1] = "err "
+            if line.get_level() <= 0:
+                x.append("*")
+            else:
+                for _i in range(line.get_level()):
+                    x.append("    ")
+                try:
+                    if line.get_id() + 1 == len(line.get_parent().get_all_content()):
+                        x[-1] = "└── "
+                    else:
+                        x[-1] = "├── "
+                except IndexError:
+                    x[-1] = "err "
             indent.append(x)
         for i, line in enumerate(wholeinscreen):
             try:
@@ -145,5 +149,9 @@ def scroll2(screen_lines: int = 15, screen_columns: int = shutil.get_terminal_si
 
 if __name__=="__main__":
     root = scroll2_content(-1, "root", None, -1)
-    content = [scroll2_content(0, "test1", root, 0), scroll2_content(1, "test2", root, 0), scroll2_content(2, "test3", root, 0)]
+    content = [
+            scroll2_content(0, "test1", root, 0, openable=True),
+            scroll2_content(1, "test2", root, 0, openable=True),
+            scroll2_content(2, "test3", root, 0, openable=True)
+        ]
     scroll2(len(content) + 2, content=content)
