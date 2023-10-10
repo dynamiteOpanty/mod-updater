@@ -54,8 +54,8 @@ class scroll2_content(object):
     def get_isOpen(self):
         return self.__isOpen
 
-def scroll2(content: list[scroll2_content], header : str = "", description: str = ""):
-    screen_lines = min(shutil.get_terminal_size().lines, len(content) + 2)
+def scroll2(max_screensize: int, content: list[scroll2_content], description: str = ""):
+    screen_lines = min(shutil.get_terminal_size().lines, min(len(content) + 2, max_screensize))
     screen_columns: int = shutil.get_terminal_size().columns
     screen = menu.Screen(screen_lines, screen_columns)
     screen.Init()
@@ -84,16 +84,20 @@ def scroll2(content: list[scroll2_content], header : str = "", description: str 
             except KeyboardInterrupt:
                 screen.Reset()
                 exit()
-            if KeyInput == input.ARROWUP:
+            if KeyInput == input.ARROWUP and not cursolPos == 0:
                 cursolPos -= 1
                 if cursolPos <= screen_offset and not screen_offset == 0:
                     screen_offset -= screen_offset - cursolPos + 1
                     if screen_offset <= 0:
                         screen_offset = 0
-            elif KeyInput == input.ARROWDOWN:
+            elif KeyInput == input.ARROWDOWN and not cursolPos == len(content) - 1:
                 cursolPos += 1
                 if cursolPos > screen_offset + screen_lines - 4 and not screen_offset == len(content) - len(output) + 1:
                     screen_offset += 1
+            elif KeyInput == 'w':
+                screen_offset -= 1
+            elif KeyInput == 's':
+                screen_offset += 1
     class line(object):
         def __init__(self, content, header: str = "") -> None:
             self.set_header(header)
@@ -124,7 +128,6 @@ def scroll2(content: list[scroll2_content], header : str = "", description: str 
 if __name__=="__main__":
     root = scroll2_content(-1, "_root", -1)
     root.append_content(scroll2_content(0, "test1", 0, openable=True))
-    root.get_all_content()[0].append_content(scroll2_content(0, "hoge", 1))
     root.append_content(scroll2_content(1, "test2", 0, openable=True))
     root.append_content(scroll2_content(2, "test3", 0, openable=True))
     root.append_content(scroll2_content(3, "test4", 0, openable=True))
@@ -136,6 +139,7 @@ if __name__=="__main__":
     root.append_content(scroll2_content(9, "test10", 0, openable=True))
     root.append_content(scroll2_content(10, "test11", 0, openable=True))
     root.append_content(scroll2_content(11, "test12", 0, openable=True))
+    root.get_all_content()[0].append_content(scroll2_content(0, "hoge", 1))
     content = root.get_all_content()
-    print(content)
-    scroll2(content)
+    # print(root.get_all_content()[0].get_name())
+    scroll2(10, content, "select.")
