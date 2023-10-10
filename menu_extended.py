@@ -4,10 +4,9 @@ import color
 import input
 
 class scroll2_content(object):
-    def __init__(self, id : int, name : str, parent, level : int, openable : bool = False, selectable : bool = True, choosable : bool = True, content : list = []) -> None:
+    def __init__(self, id : int, name : str, level : int, openable : bool = False, selectable : bool = True, choosable : bool = True, content : list = []) -> None:
         self.set_id(id)
         self.set_name(name)
-        self.__parent = parent
         self.set_level(level)
         self.__content = content
         self.set_openable(openable)
@@ -18,9 +17,6 @@ class scroll2_content(object):
         self.__id = id
     def set_name(self, name):
         self.__name = name
-    def set_parent(self, parent):
-        self.__parent = parent
-        self.set_level(parent.get_level() + 1)
     def set_level(self, level):
         self.__level = level
     def set_openable(self, openable):
@@ -33,9 +29,12 @@ class scroll2_content(object):
         self.__isOpen = value
     def clear_content(self):
         self.__content = []
-    def add_content(self, index : int = 0, *value):
+    def insert_content(self, index : int = 0, *value):
         for i, item in enumerate(value):
             self.__content.insert(index + i, item)
+    def append_content(self, *value):
+        for item in value:
+            self.__content.append(item)
     def get_all_content(self):
         return self.__content
     def get_content(self, index):
@@ -44,8 +43,6 @@ class scroll2_content(object):
         return self.__id
     def get_name(self):
         return self.__name
-    def get_parent(self):
-        return self.__parent
     def get_level(self):
         return self.__level
     def get_openable(self):
@@ -57,13 +54,14 @@ class scroll2_content(object):
     def get_isOpen(self):
         return self.__isOpen
 
-def scroll2(content: list[scroll2_content], description: str = ""):
-    screen_offset = 0
-    cursol = 0
+def scroll2(content: list[scroll2_content], header : str = "", description: str = ""):
+    screen_lines = min(shutil.get_terminal_size().lines, len(content) + 2)
     screen_columns: int = shutil.get_terminal_size().columns
-    screen = menu.Screen(min(shutil.get_terminal_size().lines, len(content) - 2), screen_columns)
+    screen = menu.Screen(screen_lines, screen_columns)
     screen.Init()
     def main():
+        cursolPos = 0
+        screen_offset = 0
         while True:
             inScreen :list[line] = []
             for i in range(screen.screen_lines - 1):
@@ -74,24 +72,28 @@ def scroll2(content: list[scroll2_content], description: str = ""):
             output: list[str] = []
             for i, item in enumerate(inScreen[:-1]):
                 try:
-                    output[i] = item.output()
+                    output.append(item.output())
                 except IndexError:
                     pass
-            output.append(color.getColor(f'{cursol + 1}/{len(content)} {description}', color.YELLOW))
-            output[cursol - screen_offset] = color.getColor(output[cursol - screen_offset], color.BG_CYAN)
+            output.append(color.getColor(f'{cursolPos + 1}/{len(content)} {description}', color.YELLOW))
+            output[cursolPos - screen_offset] = color.getColor(output[cursolPos - screen_offset], color.BG_CYAN)
             screen.Reset()
             screen.Write(output)
-            inputPhase()
-    def inputPhase():
-        try:
-            KeyInput = input.GetKeyInput()
-        except KeyboardInterrupt:
-            screen.Reset()
-            exit()
-        if KeyInput == input.ARROWUP:
-            pass
-        if KeyInput == input.ARROWDOWN:
-            pass
+            try:
+                KeyInput = input.GetKeyInput()
+            except KeyboardInterrupt:
+                screen.Reset()
+                exit()
+            if KeyInput == input.ARROWUP:
+                cursolPos -= 1
+                if cursolPos <= screen_offset and not screen_offset == 0:
+                    screen_offset -= screen_offset - cursolPos + 1
+                    if screen_offset <= 0:
+                        screen_offset = 0
+            elif KeyInput == input.ARROWDOWN:
+                cursolPos += 1
+                if cursolPos > screen_offset + screen_lines - 4 and not screen_offset == len(content) - len(output) + 1:
+                    screen_offset += 1
     class line(object):
         def __init__(self, content, header: str = "") -> None:
             self.set_header(header)
@@ -120,11 +122,20 @@ def scroll2(content: list[scroll2_content], description: str = ""):
     return main()
 
 if __name__=="__main__":
-    root = scroll2_content(-1, "root", None, -1)
-    test1 = scroll2_content(0, "test1", root, 0, openable=True)
-    test2 = scroll2_content(0, "hoge", test1, 1)
-    test3 = scroll2_content(1, "test2", root, 0, openable=True)
-    test4 = scroll2_content(2, "test3", root, 0, openable=True)
-    root.add_content(0, test1, scroll2_content(0, "test1", root, 0, openable=True))
-    content = [test1, test2, test3, test4]
+    root = scroll2_content(-1, "_root", -1)
+    root.append_content(scroll2_content(0, "test1", 0, openable=True))
+    root.get_all_content()[0].append_content(scroll2_content(0, "hoge", 1))
+    root.append_content(scroll2_content(1, "test2", 0, openable=True))
+    root.append_content(scroll2_content(2, "test3", 0, openable=True))
+    root.append_content(scroll2_content(3, "test4", 0, openable=True))
+    root.append_content(scroll2_content(4, "test5", 0, openable=True))
+    root.append_content(scroll2_content(5, "test6", 0, openable=True))
+    root.append_content(scroll2_content(6, "test7", 0, openable=True))
+    root.append_content(scroll2_content(7, "test8", 0, openable=True))
+    root.append_content(scroll2_content(8, "test9", 0, openable=True))
+    root.append_content(scroll2_content(9, "test10", 0, openable=True))
+    root.append_content(scroll2_content(10, "test11", 0, openable=True))
+    root.append_content(scroll2_content(11, "test12", 0, openable=True))
+    content = root.get_all_content()
+    print(content)
     scroll2(content)
