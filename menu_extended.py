@@ -14,19 +14,19 @@ class scroll2_content(object):
         self.set_choosable(choosable)
         self.set_isOpen(False)
     def set_id(self, id):
-        self.__id = id
+        self.__id: int = id
     def set_name(self, name):
-        self.__name = name
+        self.__name: str = name
     def set_level(self, level):
-        self.__level = level
+        self.__level: int = level
     def set_openable(self, openable):
-        self.__openable = openable
+        self.__openable: bool = openable
     def set_selectable(self, selectable):
-        self.__selectable = selectable
+        self.__selectable: bool = selectable
     def set_choosable(self, choosable):
-        self.__choosable = choosable
+        self.__choosable: bool = choosable
     def set_isOpen(self, value):
-        self.__isOpen = value
+        self.__isOpen: bool = value
     def clear_content(self):
         self.__content = []
     def insert_content(self, index : int = 0, *value):
@@ -59,18 +59,53 @@ def scroll2(max_screensize: int, content: list[scroll2_content], description: st
     screen_columns: int = shutil.get_terminal_size().columns
     screen = menu.Screen(screen_lines, screen_columns)
     screen.Init()
+    empty = scroll2_content(0, "", -1, False, False, False)
     def main():
         cursolPos = 0
         screen_offset = 0
         while True:
-            inScreen :list[line] = []
-            for i in range(screen.screen_lines - 1):
+            whole: list[line] = []
+            for item in content:
                 try:
-                    inScreen.append(line(content[i + screen_offset]))
+                    whole.append(line(item))
                 except IndexError:
-                    inScreen.append(line(""))
+                    whole.append(line(empty))
+            for item in whole:
+                if item.get_content().get_level() == 0:
+                    item.set_header("*")
+                else:
+                    item.set_header(["    "] * item.get_content().get_level())
+            i = len(whole)
+            while not i <= 0:
+                try:
+                    level = whole[i].get_content().get_level()
+                    if level > whole[i + 1].get_content().get_level():
+                        header = whole[i].get_header()
+                        if type(header) is list:
+                            header[level - 1] = "└── "
+                            whole[i].set_header(header)
+                            o = i - 1
+                            while level <= whole[o].get_content().get_level():
+                                header = whole[o].get_header()
+                                if type(header) is list:
+                                    if level == whole[o].get_content().get_level():
+                                        header[level - 1] = "├── "
+                                    else:
+                                        header[level - 1] = "│   "
+                                    whole[o].set_header(header)
+                                o -= 1
+                except IndexError:
+                    pass
+                i -= 1
+            inScreen :list[line] = whole[screen_offset:screen_offset + screen.screen_lines - 2]
+            # inScreen: list[line] = []
+            # for i in range(screen.screen_lines - 1):
+            #     try:
+            #         inScreen.append(line(content[i + screen_offset]))
+            #     except IndexError:
+            #         inScreen.append(line(""))
             output: list[str] = []
-            for i, item in enumerate(inScreen[:-1]):
+            for i, item in enumerate(inScreen):
                 try:
                     output.append(item.output())
                 except IndexError:
@@ -113,10 +148,10 @@ def scroll2(max_screensize: int, content: list[scroll2_content], description: st
             elif KeyInput == 's':
                 screen_offset += 1
     class line(object):
-        def __init__(self, content, header: str = "") -> None:
+        def __init__(self, content, header: str | list[str] = "") -> None:
             self.set_header(header)
             self.set_content(content)
-        def set_header(self, header: str):
+        def set_header(self, header: str | list[str]):
             self.__header = header
         def set_content(self, content):
             self.__content = content
@@ -131,28 +166,27 @@ def scroll2(max_screensize: int, content: list[scroll2_content], description: st
                     exit()
         def get_header(self):
             return self.__header
-        def get_content(self):
+        def get_content(self) -> scroll2_content:
             return self.__content
-        def get_text(self):
+        def get_text(self) -> str:
             return self.__text
         def output(self):
-            return f'{self.__header} {self.__text}'
+            return f'{"".join(self.__header)} {self.__text}'
     return main()
 
 if __name__=="__main__":
     root = scroll2_content(-1, "_root", -1)
-    root.append_content(scroll2_content(0, "test1", 0, openable=True))
-    root.append_content(scroll2_content(1, "test2", 0, openable=True, selectable=False))
-    root.append_content(scroll2_content(2, "test3", 0, openable=True, selectable=False))
-    root.append_content(scroll2_content(3, "test4", 0, openable=True))
-    root.append_content(scroll2_content(4, "test5", 0, openable=True))
-    root.append_content(scroll2_content(5, "test6", 0, openable=True))
+    root.append_content(scroll2_content(0, color.getColor("test1", color.GREEN), 0, openable=True))
+    root.append_content(scroll2_content(1, "test2", 1, openable=True, selectable=False))
+    root.append_content(scroll2_content(2, "test3", 2, openable=True, selectable=False))
+    root.append_content(scroll2_content(3, "test4", 2, openable=True, selectable=False))
+    root.append_content(scroll2_content(4, "test5", 1, openable=True, selectable=False))
+    root.append_content(scroll2_content(5, "test6", 1, openable=True, selectable=False))
     root.append_content(scroll2_content(6, "test7", 0, openable=True))
     root.append_content(scroll2_content(7, "test8", 0, openable=True))
     root.append_content(scroll2_content(8, "test9", 0, openable=True))
-    root.append_content(scroll2_content(9, "test10", 0, openable=True))
+    root.append_content(scroll2_content(9, "test10", 0, openable=True, choosable=False))
     root.append_content(scroll2_content(10, "test11", 0, openable=True))
-    root.append_content(scroll2_content(11, "test12", 0, openable=True))
-    content = root.get_all_content()
+    root.append_content(scroll2_content(11, color.getColor("test12", color.GREEN), 1, openable=True,selectable=False))
     # print(root.get_all_content()[0].get_name())
-    scroll2(10, content, "select.")
+    scroll2(10, root.get_all_content(), "select.")
