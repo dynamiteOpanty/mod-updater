@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-import dynaModules
+import basic
 
 app = FastAPI()
 
 @app.get("/items/{item}")
 def read_item(item: str):
     if item == "mods":
-        serverjson = dynaModules.ReadJsonFile("./server/mods.json")
+        serverjson = basic.ReadJsonFile("./server/mods.json")
         return serverjson
