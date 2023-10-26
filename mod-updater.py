@@ -28,8 +28,8 @@ def main():
     gather = asyncio.gather(*tasks)
     loop.run_until_complete(gather)
 
-    # content = [f'{i["title"]}' for i in mods["mods"]]
-    # menu.scroll(screen_lines=min(len(content) + 2, shutil.get_terminal_size().lines), content= content)
+    content = [f'{i["title"]}' for i in mods["mods"]]
+    menu.scroll(screen_lines=min(len(content) + 2, shutil.get_terminal_size().lines), content= content)
 
 async def ModrinthEachModRequest(projectID: str):
     loop = asyncio.get_event_loop()
@@ -37,7 +37,7 @@ async def ModrinthEachModRequest(projectID: str):
     basic.WriteJsonFile(f'{modsDir}{projectID}/versions.json', await loop.run_in_executor(None, ModrinthAPIRequest, f'project/{projectID}/version'))
 
 def ModrinthAPIRequest(target: str):
-    return basic.reqget(f'https://api.modrinth.com/v2/{target}', header= {"User-Agent" : "mod updater py \n self study by a student contact: matunyan0930@gmail.com"})
+    return basic.reqget(f'https://api.modrinth.com/v2/{target}', header= {"User-Agent" : "mod updater py \n self study by a student. contact: matunyan0930@gmail.com"})
 
 def MainServerAPIRequest(target: str):
     try:

@@ -1,4 +1,5 @@
-import unicodedata
+from unicodedata import east_asian_width
+from re import sub, findall
 
 BLACK = '\033[30m'          # (文字)黒
 RED = '\033[31m'            # (文字)赤
@@ -31,19 +32,16 @@ def getColor(text: str, color = COLOR_DEFAULT):
         return f'{color}{text}{RESET}'
 
 def isColored(text:str):
-    from re import findall
     if findall(r'\033\[[0-9;]*m', text):
         return True
     else:
         return False
 
 def removeColor(text: str):
-    from re import sub
     result = sub(r'\033\[[0-9;]*m', '', text)
     return result
 
 def countText(text: str):
-    from re import sub
     rawtext = sub(r'\033\[[0-9;]*m', '', text)
     count = get_east_asian_width_count(rawtext)
     return count
@@ -51,7 +49,7 @@ def countText(text: str):
 def get_east_asian_width_count(text):
     count = 0
     for c in text:
-        if unicodedata.east_asian_width(c) in 'FWA':
+        if east_asian_width(c) in 'FWA':
             count += 2
         else:
             count += 1

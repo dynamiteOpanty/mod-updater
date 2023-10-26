@@ -2,7 +2,7 @@ from urllib import request as urlrequest, error as urlliberror
 from json import load, loads, dumps
 from os import path as ospath, mkdir
 
-class reqgeterror(Exception):
+class reqgeterror(OSError):
     pass
 # APIリクエストの本体です
 def reqget(URL: str, debug: bool = False, header = None):
